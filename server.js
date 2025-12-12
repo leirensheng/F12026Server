@@ -65,6 +65,8 @@ let computer = getComputerName();
 const termMap = new Map();
 let redisClient;
 let isFirstWorker = false;
+let successTimer;
+let successInfo;
 
 let lockKey = async (key) => {
   await new Promise((r) => {
@@ -156,7 +158,7 @@ let closeByPid = async (pid) => {
 
 process.on(
   "message",
-  async ({ msg, type, pid, cmd, uuid, key, isLock, index }) => {
+  async ({ msg, type, pid, cmd, uuid, key, isLock, index, nickname }) => {
     if (type === "processMsg") {
       eventBus.emit("processMsg" + pid, msg);
     } else if (type === "startCmd") {
@@ -192,6 +194,27 @@ process.on(
       eventBus.emit("unlockKeyDone" + key, index);
     } else if (type === "checkLockKeyDone") {
       eventBus.emit("checkLockKeyDone" + key, isLock);
+    } else if (type === "setSuccess") {
+      await new Promise((resolve) => {
+        clearTimeout(successTimer);
+        successInfo.push({ nickname });
+        successTimer = setTimeout(async () => {
+          let allConfig = await readFile("config.json");
+          allConfig = JSON.parse(allConfig);
+
+          successInfo.forEach((obj) => {
+            let { nickname } = obj;
+            let config = allConfig[nickname];
+            config.hasSuccess = true;
+            delete obj.nickname;
+          });
+
+          successInfo = [];
+          await writeFile("config.json", JSON.stringify(allConfig, null, 4));
+          // await syncActivityInfo("userConfigAndSuccessRecord");
+          resolve();
+        }, 20000);
+      });
     }
   }
 );
@@ -225,6 +248,7 @@ let startSchedule = async () => {
 setTimeout(() => {
   if (isFirstWorker) {
     startSchedule();
+    successInfo = [];
   }
 }, 10000);
 const app = new Koa();
@@ -421,7 +445,7 @@ router.post("/removeAudience", async (ctx, next) => {
 
     ctx.status = 200;
   } catch (e) {
-    console.log(e)
+    console.log(e);
     sendAppMsg(
       "出错",
       `【F1】删除用户过程出错【${phone}】删除${audience}` + e.message,
@@ -455,7 +479,7 @@ router.post("/addAudience", async (ctx, next) => {
     let res = await getAudience(token);
     let audienceList = res.map((one) => one.name);
     await axios({
-      url:  `http://localhost:${env.port}/updateAudienceInfo`,
+      url: `http://localhost:${env.port}/updateAudienceInfo`,
       method: "post",
       data: {
         phone,
@@ -495,6 +519,11 @@ router.get("/getAllUserConfig", async (ctx, next) => {
 router.get("/getOneUserConfig/:user", async (ctx, next) => {
   let config = await readFile("config.json");
   ctx.body = JSON.parse(config)[ctx.params.user];
+});
+
+router.post("/setSuccess", async (ctx) => {
+  process.send({ type: "setSuccess", nickname: ctx.request.body.nickname });
+  ctx.status = 200;
 });
 
 router.get("/getAgentConfig", async (ctx, next) => {
@@ -668,9 +697,9 @@ router.post("/editConfig", async (ctx) => {
     config.uid = config.uid.replace("尊敬的用户，你的UID是：", "");
   }
   obj[username] = { ...oldConfig, ...config };
-  if(!config.only){
-    delete obj[username].only
-  }
+  // if (!config.only) {
+  //   delete obj[username].only;
+  // }
 
   if (isRefresh) {
     delete obj[username].skuIdToTypeMap;

@@ -44,7 +44,7 @@ let init = async () => {
     let workerInfo = {};
     let uuidToWorkerId = {};
     let messageHandler = async (
-      { type, pid, msg, cmd, uuid, key },
+      { type, pid, msg, cmd, uuid, key, nickname },
       workerId
     ) => {
       // console.log("主进程收到消息", type, workerId);
@@ -159,6 +159,11 @@ let init = async () => {
             key,
             isLock: lockKey.has(key),
           });
+        } else if (type === "setSuccess") {
+          cluster.workers[firstWorkerId].send({
+            type: "setSuccess",
+            nickname,
+          });
         }
       } catch (e) {
         console.log("主进程报错！！！！！", e);
@@ -175,10 +180,12 @@ let init = async () => {
     });
 
     let hasSetFirstWorker = false;
+    let firstWorkerId = null;
     for (const id in cluster.workers) {
       if (!hasSetFirstWorker) {
         hasSetFirstWorker = true;
         setTimeout(() => {
+          firstWorkerId = id;
           cluster.workers[id].send({
             type: "setFirstWorker",
           });
@@ -191,7 +198,7 @@ let init = async () => {
       });
     }
 
-    await sendAppMsg("F1", "F1启动成功");
+    await sendAppMsg("F1", env.fileName + "启动成功");
   } else {
     require("./server");
   }
