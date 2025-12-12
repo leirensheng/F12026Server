@@ -1,0 +1,164 @@
+{
+    "August 23, 2025, Saturday_P7 ¥480": {
+        "stdShowSessionId": "684be90a82b6fe0001b9a454",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc35a",
+        "seatPlanId": "6858f259b78f120001fb94b8",
+        "bizShowSessionId": "6858f259b78f120001fb94b5",
+        "originalPrice": 480,
+        "zones": []
+    },
+    "August 23, 2025, Saturday_P6 ¥680": {
+        "stdShowSessionId": "684be90a82b6fe0001b9a454",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc363",
+        "seatPlanId": "6858f259b78f120001fb94b9",
+        "bizShowSessionId": "6858f259b78f120001fb94b5",
+        "originalPrice": 680,
+        "zones": []
+    },
+    "August 23, 2025, Saturday_P5 ¥880": {
+        "stdShowSessionId": "684be90a82b6fe0001b9a454",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc36a",
+        "seatPlanId": "6858f259b78f120001fb94ba",
+        "bizShowSessionId": "6858f259b78f120001fb94b5",
+        "originalPrice": 880,
+        "zones": []
+    },
+    "August 23, 2025, Saturday_P4 ¥1080": {
+        "stdShowSessionId": "684be90a82b6fe0001b9a454",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc370",
+        "seatPlanId": "6858f259b78f120001fb94bb",
+        "bizShowSessionId": "6858f259b78f120001fb94b5",
+        "originalPrice": 1080,
+        "zones": []
+    },
+    "August 23, 2025, Saturday_P3 ¥1480": {
+        "stdShowSessionId": "684be90a82b6fe0001b9a454",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc373",
+        "seatPlanId": "6858f259b78f120001fb94bc",
+        "bizShowSessionId": "6858f259b78f120001fb94b5",
+        "originalPrice": 1480,
+        "zones": []
+    },
+    "August 23, 2025, Saturday_P2 ¥1880": {
+        "stdShowSessionId": "684be90a82b6fe0001b9a454",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc376",
+        "seatPlanId": "6858f259b78f120001fb94bd",
+        "bizShowSessionId": "6858f259b78f120001fb94b5",
+        "originalPrice": 1880,
+        "zones": []
+    },
+    "August 23, 2025, Saturday_P1 ¥2280": {
+        "stdShowSessionId": "684be90a82b6fe0001b9a454",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc379",
+        "seatPlanId": "6858f259b78f120001fb94be",
+        "bizShowSessionId": "6858f259b78f120001fb94b5",
+        "originalPrice": 2280,
+        "zones": []
+    },
+    "August 23, 2025, Saturday_Floor 2(Rows 6-10) ¥4880": {
+        "stdShowSessionId": "684be90a82b6fe0001b9a454",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc37c",
+        "seatPlanId": "6858f259b78f120001fb94bf",
+        "bizShowSessionId": "6858f259b78f120001fb94b5",
+        "originalPrice": 4880,
+        "zones": []
+    },
+    "August 23, 2025, Saturday_Floor 1(Rows 4-5) ¥6880": {
+        "stdShowSessionId": "684be90a82b6fe0001b9a454",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc37f",
+        "seatPlanId": "6858f259b78f120001fb94c0",
+        "bizShowSessionId": "6858f259b78f120001fb94b5",
+        "originalPrice": 6880,
+        "zones": []
+    },
+    "August 23, 2025, Saturday_Rising Star VIP (Row 3)": {
+        "stdShowSessionId": "684be90a82b6fe0001b9a454",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc382",
+        "seatPlanId": "6858f259b78f120001fb94c1",
+        "bizShowSessionId": "6858f259b78f120001fb94b5",
+        "originalPrice": 15880,
+        "zones": []
+    },
+    "August 23, 2025, Saturday_Challenger VIP (Row 2)": {
+        "stdShowSessionId": "684be90a82b6fe0001b9a454",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc385",
+        "seatPlanId": "6858f259b78f120001fb94c2",
+        "bizShowSessionId": "6858f259b78f120001fb94b5",
+        "originalPrice": 18880,
+        "zones": []
+    },
+    "August 23, 2025, Saturday_Champion VIP (Row 1)": {
+        "stdShowSessionId": "684be90a82b6fe0001b9a454",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc388",
+        "seatPlanId": "6858f259b78f120001fb94c3",
+        "bizShowSessionId": "6858f259b78f120001fb94b5",
+        "originalPrice": 22880,
+        "zones": []
+    },
+    "August 22, 2025, Friday_P4 ¥280": {
+        "stdShowSessionId": "684be8da82b6fe0001b9a392",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc355",
+        "seatPlanId": "6858f259b78f120001fb94e1",
+        "bizShowSessionId": "6858f259b78f120001fb94e0",
+        "originalPrice": 280,
+        "zones": []
+    },
+    "August 22, 2025, Friday_P3 ¥480": {
+        "stdShowSessionId": "684be8da82b6fe0001b9a392",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc358",
+        "seatPlanId": "6858f259b78f120001fb94e2",
+        "bizShowSessionId": "6858f259b78f120001fb94e0",
+        "originalPrice": 480,
+        "zones": []
+    },
+    "August 22, 2025, Friday_P2 ¥680": {
+        "stdShowSessionId": "684be8da82b6fe0001b9a392",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc35e",
+        "seatPlanId": "6858f259b78f120001fb94e3",
+        "bizShowSessionId": "6858f259b78f120001fb94e0",
+        "originalPrice": 680,
+        "zones": []
+    },
+    "August 22, 2025, Friday_P1 ¥880": {
+        "stdShowSessionId": "684be8da82b6fe0001b9a392",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc361",
+        "seatPlanId": "6858f259b78f120001fb94e4",
+        "bizShowSessionId": "6858f259b78f120001fb94e0",
+        "originalPrice": 880,
+        "zones": []
+    },
+    "August 22, 2025, Friday_Floor ¥1280": {
+        "stdShowSessionId": "684be8da82b6fe0001b9a392",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "684fb463ee12fa00017cc367",
+        "seatPlanId": "6858f259b78f120001fb94e5",
+        "bizShowSessionId": "6858f259b78f120001fb94e0",
+        "originalPrice": 1280,
+        "zones": []
+    },
+    "August 22, 2025, Friday_Floor Row 1  ¥1880": {
+        "stdShowSessionId": "684be8da82b6fe0001b9a392",
+        "showId": "6858f25882b6fe0001df9d5a",
+        "stdSeatPlanId": "6854c14fbbeab90001bca575",
+        "seatPlanId": "6858f259b78f120001fb94e6",
+        "bizShowSessionId": "6858f259b78f120001fb94e0",
+        "originalPrice": 1880,
+        "zones": []
+    }
+}
