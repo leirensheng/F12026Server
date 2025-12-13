@@ -1,10 +1,11 @@
-let axios;
-let init = (successInfo, allConfig) => {
-  let successNicknames = successInfo.map((obj) => obj.nickname);
-  let allUsers = Object.keys(allConfig);
+let axios = require("axios");
+const env = require("./env.json");
+let init = (successNicknames, allConfig, runningUsers) => {
+  let allUsers = Object.keys(allConfig).filter(
+    (user) => !runningUsers.includes(user)
+  );
   let needToOpenUsers = [];
-  successInfo.forEach((obj) => {
-    let { nickname } = obj;
+  successNicknames.forEach((nickname) => {
     let config = allConfig[nickname];
 
     config.targetTypes.forEach((type) => {

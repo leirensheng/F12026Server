@@ -13,6 +13,7 @@ const websocket = require("koa-easy-ws");
 let sleep = (time) => new Promise((r) => setTimeout(r, time));
 const schedule = require("node-schedule");
 const env = require("./env.json");
+let startNext = require("./startNext");
 // let checkZones = require("../" + env.fileName + "/checkZones");
 const child_process = require("child_process");
 let phoneToEmail = {
@@ -201,6 +202,7 @@ process.on(
         successTimer = setTimeout(async () => {
           let allConfig = await readFile("config.json");
           allConfig = JSON.parse(allConfig);
+          let successNicknames = successInfo.map((one) => one.nickname);
 
           successInfo.forEach((obj) => {
             let { nickname } = obj;
@@ -208,12 +210,14 @@ process.on(
             config.hasSuccess = true;
             delete obj.nickname;
           });
+          let runningUsers = await getRunningUsers(redisClient);
+          startNext(successNicknames, allConfig, runningUsers);
 
           successInfo = [];
           await writeFile("config.json", JSON.stringify(allConfig, null, 4));
           // await syncActivityInfo("userConfigAndSuccessRecord");
           resolve();
-        }, 20000);
+        }, 2000);
       });
     }
   }
@@ -233,7 +237,10 @@ let startSchedule = async () => {
 
       if (pidToCmdStr && prePidToCmd !== pidToCmdStr && pidToCmdStr !== "{}") {
         console.log("pid不一致写入");
-        await fs.writeFileSync("toRecover.json", pidToCmdStr);
+        await fs.writeFileSync(
+          path.resolve(__dirname, "toRecover.json"),
+          pidToCmdStr
+        );
         prePidToCmd = pidToCmdStr;
       }
     }

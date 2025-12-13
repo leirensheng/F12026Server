@@ -265,7 +265,9 @@ let slaveDamaiHost =
     : "http://192.168.4.3:" + env.port;
 
 let slaveSlideHost =
-  computer === "新电脑" ? "http://192.168.4.2:"+env.port : "http://192.168.4.3:"+env.port;
+  computer === "新电脑"
+    ? "http://192.168.4.2:" + env.port
+    : "http://192.168.4.3:" + env.port;
 
 let recoverOne = async (failCmds, cmd, successMsg) => {
   try {
@@ -279,16 +281,14 @@ let recoverOne = async (failCmds, cmd, successMsg) => {
   }
 };
 
-let recoverUser = async (userCmds, failCmds) => {
+let recoverUser = async (userCmds, failCmds, index) => {
   let i = 0;
   for (let cmd of userCmds) {
     await recoverOne(failCmds, cmd, "全部打开完成");
     i++;
     let percent = Math.floor((i / userCmds.length) * 100);
-    let msg = `恢复进度:  ${i}/${userCmds.length}  ${percent}%`;
-    sendAppMsg("【亚冬会】恢复进度=====>", msg, {
-      type: "info F",
-    });
+    let msg = `恢复进度${index}:  ${i}/${userCmds.length}  ${percent}%`;
+    sendAppMsg("恢复", msg);
     console.log(msg);
   }
 };
@@ -297,6 +297,25 @@ let recoverCheck = async (checkCmds, failCmds) => {
     await recoverOne(failCmds, cmd, "开始进行");
   }
 };
+function splitArray(arr) {
+  const n = arr.length;
+  const size = Math.floor(n / 4);
+  const remainder = n % 4;
+
+  const result = [];
+  let start = 0;
+
+  for (let i = 0; i < 4; i++) {
+    // 前几个子数组多一个元素（如果余数不为0）
+    const extra = i < remainder ? 1 : 0;
+    const end = start + size + extra;
+    result.push(arr.slice(start, end));
+    start = end;
+  }
+
+  return result;
+}
+
 let recover = async (redisClient) => {
   let pidToCmd = await fs.readFileSync(
     path.resolve(__dirname, "toRecover.json"),
@@ -309,16 +328,15 @@ let recover = async (redisClient) => {
     .map((pid) => pidToCmd[pid]);
 
   let userCmds = cmds.filter((one) => one.includes("npm run start"));
-  let checkCmds = cmds.filter((one) => one.includes("npm run check"));
   userCmds = userCmds.map((cmd) => cmd.replace(/ 1 true/, ""));
   userCmds = [...new Set(userCmds)];
-  checkCmds = [...new Set(checkCmds)];
-
+  let fourPartCmds = splitArray(userCmds);
   let failCmds = [];
-  await Promise.all([
-    recoverCheck(checkCmds, failCmds),
-    recoverUser(userCmds, failCmds),
-  ]);
+
+  let promises = fourPartCmds.map((cmds, index) =>
+    recoverUser(cmds, failCmds, index)
+  );
+  await Promise.all(promises);
 
   return failCmds;
 };
@@ -336,7 +354,8 @@ let startCmdWithPidInfo = ({
       .then((pid) => {
         console.log("新增进程:" + pid);
         let ws = new WebSocket(socketURL + pid);
-        let closePid = () => axios.get(`http://127.0.0.1:${env.port}/close/` + pid);
+        let closePid = () =>
+          axios.get(`http://127.0.0.1:${env.port}/close/` + pid);
 
         ws.onmessage = ({ data }) => {
           console.log(data);
