@@ -626,12 +626,12 @@ router.post("/updateAudienceInfo", async (ctx) => {
   if (isChange) {
     audienceInfo[phone] = audienceList;
     await writeFile("audienceInfo.json", JSON.stringify(audienceInfo));
-    await syncActivityInfo("audienceInfo");
 
     await redisClient.set(
       "audienceInfoFor" + env.fileName,
       JSON.stringify(audienceInfo)
     );
+    await syncActivityInfo("audienceInfo");
   }
   ctx.status = 200;
 });
