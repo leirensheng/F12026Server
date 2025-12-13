@@ -14,6 +14,8 @@ let sleep = (time) => new Promise((r) => setTimeout(r, time));
 const schedule = require("node-schedule");
 const env = require("./env.json");
 let startNext = require("./startNext");
+const mainHostWithoutPort = require(`../${env.fileName}/mainHost`);
+
 // let checkZones = require("../" + env.fileName + "/checkZones");
 const child_process = require("child_process");
 let phoneToEmail = {
@@ -40,9 +42,13 @@ let phoneToEmail = {
   16747521736: "leirensheng19@126.com",
   16555982641: "leirensheng20@126.com",
 };
-let { removeAudience, login, getAudience, addAudience } = require("../" +
-  env.fileName +
-  "/f1Utils");
+let {
+  removeAudience,
+  login,
+  getAudience,
+  addAudience,
+  slaveDamaiHost,
+} = require("../" + env.fileName + "/f1Utils");
 
 const {
   getUUID,
@@ -50,7 +56,6 @@ const {
   startCmdAngGetPic,
   startCmdWithPidInfo,
   syncActivityInfo,
-  slaveDamaiHost,
   updateProxyWhiteIp,
   removeConfig,
   readFile,
@@ -120,7 +125,6 @@ let addPidToCmd = async (pid, cmd) => {
 // 删除记录termMap、pidToCmdHa
 let removePidInfo = async ({ user, pid }) => {
   let key = "pidToCmd" + env.fileName;
-
   await waitUnlockKey(key);
   await lockKey(key);
   let pidToCmd = await redisClient.get(key);
@@ -130,7 +134,6 @@ let removePidInfo = async ({ user, pid }) => {
       pidToCmd[pid].includes(`npm run start ${user}`)
     );
   }
-  console.log("删除pid", pid);
   delete pidToCmd[pid];
   await redisClient.set(key, JSON.stringify(pidToCmd));
   await unlockKey(key);
@@ -312,6 +315,7 @@ router.post("/addInfo", async (ctx) => {
   delete allConfig[username].username;
 
   await writeFile("config.json", JSON.stringify(allConfig, null, 4));
+  await syncActivityInfo("userConfig");
   ctx.body = {
     username,
   };
@@ -421,7 +425,7 @@ router.post("/removeAudience", async (ctx, next) => {
     config = JSON.parse(config);
 
     await axios({
-      url: `http://localhost:${env.port}/updateAudienceInfo`,
+      url: `${mainHostWithoutPort}:${env.port}/updateAudienceInfo`,
       method: "post",
       data: {
         phone,
@@ -449,6 +453,7 @@ router.post("/removeAudience", async (ctx, next) => {
     }
 
     await writeFile("config.json", JSON.stringify(config, null, 4));
+    await syncActivityInfo("userConfig");
 
     ctx.status = 200;
   } catch (e) {
@@ -486,7 +491,7 @@ router.post("/addAudience", async (ctx, next) => {
     let res = await getAudience(token);
     let audienceList = res.map((one) => one.name);
     await axios({
-      url: `http://localhost:${env.port}/updateAudienceInfo`,
+      url: `${mainHostWithoutPort}:${env.port}/updateAudienceInfo`,
       method: "post",
       data: {
         phone,
@@ -621,6 +626,8 @@ router.post("/updateAudienceInfo", async (ctx) => {
   if (isChange) {
     audienceInfo[phone] = audienceList;
     await writeFile("audienceInfo.json", JSON.stringify(audienceInfo));
+    await syncActivityInfo("audienceInfo");
+
     await redisClient.set(
       "audienceInfoFor" + env.fileName,
       JSON.stringify(audienceInfo)
@@ -636,7 +643,7 @@ router.get("/getDnsIp", async (ctx, next) => {
 
 router.post("/startUserFromRemote", async (ctx, next) => {
   let users = await getRunningUsers(redisClient);
-  let { cmd } = ctx.request.body;
+  let { cmd, isUseSlave } = ctx.request.body;
   let willStart = cmd.split(/\s/)[3];
   let pidToCmd = await redisClient.get("pidToCmd" + env.fileName);
   pidToCmd = JSON.parse(pidToCmd);
@@ -651,39 +658,121 @@ router.post("/startUserFromRemote", async (ctx, next) => {
     return;
   }
 
-  let isSuccess = false;
-  let msg;
-  let pid;
-  try {
-    let res = await startCmdWithPidInfo({
-      cmd,
-      successMsg: "全部打开完成",
-      isStopWhenLogin: false,
+  if (isUseSlave) {
+    let { data } = await axios({
+      method: "post",
+      data: { cmd },
+      url: slaveDamaiHost + "/startUserFromRemote",
     });
-    pid = res.pid;
-    msg = res.msg;
-    isSuccess = true;
-  } catch (e) {
-    msg = e.message;
-    console.log(e);
-  }
+    ctx.body = data;
+    let pid;
+    if (data.msg) {
+      sendAppMsg("启动用户", "启动从机出错" + data.msg, { type: "error" });
+      if (data.msg.includes("已经启动")) {
+        pid = data.pid;
+      }
+    } else {
+      pid = data.data.pid;
+    }
+    if (pid) {
+      await addPidToCmd(`slave${pid}`, cmd);
+    }
+  } else {
+    let isSuccess = false;
+    let msg;
+    let pid;
+    try {
+      let res = await startCmdWithPidInfo({
+        cmd,
+        successMsg: "全部打开完成",
+        isStopWhenLogin: false,
+      });
+      pid = res.pid;
+      msg = res.msg;
+      isSuccess = true;
+    } catch (e) {
+      msg = e.message;
+      console.log(e);
+    }
 
-  if (ctx.request.body.uid && isSuccess) {
-    sendMsgForCustomer(ctx.request.body.toUserMsg, ctx.request.body.uid);
+    if (ctx.request.body.uid && isSuccess) {
+      sendMsgForCustomer(ctx.request.body.toUserMsg, ctx.request.body.uid);
+    }
+    ctx.body = {
+      code: isSuccess ? 0 : -1,
+      msg,
+      data: {
+        pid,
+      },
+    };
   }
-  ctx.body = {
-    code: isSuccess ? 0 : -1,
-    msg,
+});
+
+router.post("/resStartUser", async (ctx) => {
+  let { username, isUseSlave } = ctx.request.body;
+  await axios({
+    timeout: 60000,
+    url: mainHostWithoutPort + `:${env.port}/stopUser/` + username,
     data: {
-      pid,
+      isUseSlave,
     },
-  };
+  });
+  await sleep(4000);
+  await axios({
+    method: "post",
+    timeout: 40000,
+    url: mainHostWithoutPort + `:${env.port}/startUserFromRemote/`,
+    data: {
+      isUseSlave,
+      cmd: `npm run start ${username}`,
+    },
+  });
+});
+
+router.post("/saveSlavePid", async (ctx, next) => {
+  let { cmds, pidToCmd: slavePidToCmd } = ctx.request.body;
+  let key = "pidToCmd" + env.fileName;
+  await waitUnlockKey(key);
+  await lockKey(key);
+  let pidToCmd = await redisClient.get(key);
+  pidToCmd = JSON.parse(pidToCmd);
+
+  cmds.forEach((cmd) => {
+    let pid = Object.keys(slavePidToCmd).find(
+      (pid) => slavePidToCmd[pid] === cmd
+    );
+    pidToCmd[`slave${pid}`] = cmd;
+  });
+  await redisClient.set(key, JSON.stringify(pidToCmd));
+  await unlockKey(key);
+  ctx.status = 200;
+});
+
+// 多种配置同步, 从对方的服务器同步
+router.get("/syncActivityInfo/:type", async (ctx) => {
+  let type = ctx.params.type;
+  if (type.includes("userConfig")) {
+    let {
+      data: {
+        data: { config },
+      },
+    } = await axios(slaveDamaiHost + "/getAllUserConfig");
+    await writeFile("config.json", JSON.stringify(config, null, 4));
+  } else if (type === "audienceInfo") {
+    let {
+      data: { data: audienceInfoFromRemote },
+    } = await axios(slaveDamaiHost + "/getAllAudienceInfo");
+    audienceInfo = audienceInfoFromRemote;
+    await writeFile("audienceInfo.json", JSON.stringify(audienceInfo, null, 4));
+  }
+  ctx.status = 200;
 });
 
 router.post("/removeConfig", async (ctx, next) => {
   let { username } = ctx.request.body;
   console.log("删除用户" + username);
   await removeConfig(username, false);
+  await syncActivityInfo("userConfig");
   ctx.status = 200;
 });
 
@@ -714,6 +803,7 @@ router.post("/editConfig", async (ctx) => {
     obj[username].targetTypes = [];
   }
   await writeFile("config.json", JSON.stringify(obj, null, 4));
+  await syncActivityInfo("userConfig");
   ctx.body = "ok";
 });
 

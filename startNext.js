@@ -1,5 +1,6 @@
 let axios = require("axios");
 const env = require("./env.json");
+const mainHostWithoutPort = require(`../${env.fileName}/mainHost`);
 let init = (successNicknames, allConfig, runningUsers) => {
   let allUsers = Object.keys(allConfig).filter(
     (user) => !runningUsers.includes(user)
@@ -45,9 +46,13 @@ let init = (successNicknames, allConfig, runningUsers) => {
   });
   console.log("需要启动的用户", needToOpenUsers);
   needToOpenUsers.forEach((user) => {
-    axios.post(`http://localhost:${env.port}/startUserFromRemote`, {
-      cmd: `npm run start ${user}`,
-    });
+    axios.post(
+      `${mainHostWithoutPort}:${env.port}/startUserFromRemote`,
+      {
+        cmd: `npm run start ${user}`,
+        isUseSlave: allConfig[user].isUseSlave,
+      }
+    );
   });
 };
 

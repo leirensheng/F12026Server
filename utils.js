@@ -9,6 +9,9 @@ const { sendMsg } = require("../damai/utils");
 const WebSocket = require("ws");
 const socketURL = `ws://127.0.0.1:${env.port}/socket/`;
 const crypto = require("crypto");
+let { isSlave } = require(`../${env.fileName}/localConfig.json`);
+const mainHostWithoutPort = require(`../${env.fileName}/mainHost`);
+
 function getSign(data, t, token = "undefined") {
   const text = `${token}&${t}&12574478&${JSON.stringify(data)}`;
   const md5 = crypto.createHash("md5");
@@ -75,7 +78,7 @@ let removeConfig = async (username, isNoRemove) => {
   );
   if (!hasOther) {
     await axios({
-      url: "http://localhost:5001/removeOnePhoneAudience",
+      url: `${mainHostWithoutPort}:${env.port}/removeOnePhoneAudience`,
       method: "post",
       data: {
         phone,
@@ -215,7 +218,7 @@ let sendAppMsg = async (title, content, payload) => {
     await axios({
       method: "post",
       data: { title, content, payload },
-      url: `http://mticket.ddns.net:4000/sendAppMsg`,
+      url: `${mainHostWithoutPort}:4000/sendAppMsg`,
     });
   } catch (e) {
     sendMsg("推送失败" + e.message + content);
@@ -261,13 +264,39 @@ let getRunningChecks = async (redisClient) => {
 
 let slaveDamaiHost =
   computer === "新电脑"
-    ? "http://192.168.4.2:" + env.port
-    : "http://192.168.4.3:" + env.port;
+    ? "http://192.168.2.75:" + env.port
+    : "http://192.168.2.76:" + env.port;
 
-let slaveSlideHost =
-  computer === "新电脑"
-    ? "http://192.168.4.2:" + env.port
-    : "http://192.168.4.3:" + env.port;
+let isSlaveOnline = async () => {
+  try {
+    await axios({
+      url: slaveDamaiHost + "/ping",
+      method: "get",
+      timeout: 50,
+    });
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+let syncActivityInfo = async (type) => {
+  let isOnline = await isSlaveOnline();
+  if (isOnline) {
+    try {
+      await axios({
+        url: slaveDamaiHost + "/syncActivityInfo/" + type,
+        method: "get",
+        timeout: 1000,
+      });
+    } catch (e) {
+      console.log(e);
+      sendAppMsg("同步活动信息失败", "同步信息失败:" + type + e.message, {
+        type: "error",
+      });
+    }
+  }
+};
 
 let recoverOne = async (failCmds, cmd, successMsg) => {
   try {
@@ -337,7 +366,18 @@ let recover = async (redisClient) => {
     recoverUser(cmds, failCmds, index)
   );
   await Promise.all(promises);
-
+  if (isSlave) {
+    let pidToCmd = await redisClient.get("pidToCmd" + end.fileName);
+    pidToCmd = JSON.parse(pidToCmd);
+    await axios({
+      method: "post",
+      url: mainHostWithoutPort + `:${env.port}/saveSlavePid`,
+      data: {
+        cmds: userCmds,
+        pidToCmd,
+      },
+    });
+  }
   return failCmds;
 };
 
@@ -466,6 +506,7 @@ let getUUID = () => {
     );
   });
 };
+
 module.exports = {
   getUUID,
   recover,
@@ -473,7 +514,6 @@ module.exports = {
   startCmdAngGetPic,
   updateProxyWhiteIp,
   slaveDamaiHost,
-  slaveSlideHost,
   sleep,
   sendAppMsg,
   myClick,
@@ -484,6 +524,7 @@ module.exports = {
   getTime,
   removeOneActivity,
   waitUntilSuccess,
+  syncActivityInfo,
   // restartUser,
   getRunningChecks,
   getRunningUsers,
