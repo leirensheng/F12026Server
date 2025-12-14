@@ -367,7 +367,7 @@ let recover = async (redisClient) => {
   );
   await Promise.all(promises);
   if (isSlave) {
-    let pidToCmd = await redisClient.get("pidToCmd" + end.fileName);
+    let pidToCmd = await redisClient.get("pidToCmd" + env.fileName);
     pidToCmd = JSON.parse(pidToCmd);
     await axios({
       method: "post",
