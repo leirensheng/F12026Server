@@ -48,6 +48,7 @@ let {
   getAudience,
   addAudience,
   slaveDamaiHost,
+  screenshot,
 } = require("../" + env.fileName + "/f1Utils");
 
 const {
@@ -471,6 +472,24 @@ router.post("/removeAudience", async (ctx, next) => {
     };
   }
 });
+router.post("/closeAndScreenshot", async (ctx, next) => {
+  let { nickname, isUseSlave } = ctx.request.body;
+  if (isUseSlave) {
+    await axios({
+      url: slaveDamaiHost + "/closeAndScreenshot",
+      method: "post",
+      data: {
+        nickname,
+      },
+    });
+    await removePidInfo({ user: nickname });
+    ctx.status = 200;
+  } else {
+    await axios("http://localhost:" + env.port + "/stopUser/" + nickname);
+    await screenshot(nickname);
+    ctx.status = 200;
+  }
+});
 
 router.post("/addAudience", async (ctx, next) => {
   let { phone, audience, number } = ctx.request.body;
@@ -535,6 +554,7 @@ router.get("/getOneUserConfig/:user", async (ctx, next) => {
 
 router.post("/setSuccess", async (ctx) => {
   process.send({ type: "setSuccess", nickname: ctx.request.body.nickname });
+  cmd(`node laterScreenshot.js ${ctx.request.body.nickname}`);
   ctx.status = 200;
 });
 
