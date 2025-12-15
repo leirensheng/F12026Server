@@ -15,6 +15,7 @@ const schedule = require("node-schedule");
 const env = require("./env.json");
 let startNext = require("./startNext");
 const mainHostWithoutPort = require(`../${env.fileName}/mainHost`);
+let calcActivity = require("./calcActivity");
 
 // let checkZones = require("../" + env.fileName + "/checkZones");
 const child_process = require("child_process");
@@ -322,6 +323,10 @@ router.post("/addInfo", async (ctx) => {
   };
 });
 
+router.get("/activityInfo", async (ctx) => {
+  let res = await calcActivity(ctx.query.ticketType, ctx.query.machine);
+  ctx.body = res;
+});
 //服务端初始化
 router.get("/terminal", async (ctx, next) => {
   let pid = await new Promise((resolve) => {
@@ -554,7 +559,7 @@ router.get("/getOneUserConfig/:user", async (ctx, next) => {
 
 router.post("/setSuccess", async (ctx) => {
   process.send({ type: "setSuccess", nickname: ctx.request.body.nickname });
-  cmd(`node laterScreenshot.js ${ctx.request.body.nickname}`);
+  cmd2(`node laterScreenshot.js ${ctx.request.body.nickname}`);
   ctx.status = 200;
 });
 
