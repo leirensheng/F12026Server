@@ -362,8 +362,10 @@ router.get("/stopUser/:user", async (ctx, next) => {
   let pidToCmd = await redisClient.get("pidToCmd" + env.fileName);
   pidToCmd = JSON.parse(pidToCmd);
 
-  let pid = Object.keys(pidToCmd).find((pid) =>
-    pidToCmd[pid].includes(`npm run start ${user}`)
+  let pid = Object.keys(pidToCmd).find(
+    (pid) =>
+      pidToCmd[pid] === `npm run start ${user}` ||
+      pidToCmd[pid] === `npm run start ${user} true`
   );
   if (!pid) {
     ctx.body = "";
