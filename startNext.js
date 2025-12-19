@@ -3,6 +3,14 @@ const env = require("./env.json");
 const mainHostWithoutPort = require(`../${env.fileName}/mainHost`);
 let { sendAppMsg } = require("./utils");
 
+let getPriceByUser = (user, allConfig) => {
+  let { remark = "" } = allConfig[user];
+  remark = remark.replace(/\d{11}/g, "");
+  let res = remark.match(/(\d{1,4})/);
+  let price = res ? parseInt(res[0]) : 0;
+  return price;
+};
+
 let init = (successNicknames, allConfig, runningUsers) => {
   let allUsers = Object.keys(allConfig).filter(
     (user) => !runningUsers.includes(user)
@@ -24,7 +32,7 @@ let init = (successNicknames, allConfig, runningUsers) => {
           direction = 1;
           times = 3;
         } else {
-          let target = allUsers.find((user) => {
+          let targets = allUsers.filter((user) => {
             let { only, targetTypes, orders, remark } = allConfig[user];
             return (
               targetTypes.includes(type) &&
@@ -35,9 +43,14 @@ let init = (successNicknames, allConfig, runningUsers) => {
               (!remark || !remark.match(/密码|便宜/))
             );
           });
-          if (target) {
-            console.log(type + "找到目标人", target);
-            needToOpenUsers.push(target);
+          targets.sort(
+            (a, b) =>
+              getPriceByUser(b, allConfig) - getPriceByUser(a, allConfig)
+          );
+
+          if (targets.length > 0) {
+            console.log(type + "找到目标人", targets[0]);
+            needToOpenUsers.push(targets[0]);
             times = 0;
           } else {
             times--;
