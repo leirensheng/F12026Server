@@ -313,10 +313,12 @@ let recoverOne = async (failCmds, cmd, successMsg) => {
 let recoverUser = async (userCmds, failCmds, index) => {
   let i = 0;
   for (let cmd of userCmds) {
+    let msg = `${computer}_恢复${index}_${cmd}`;
+    sendAppMsg("恢复", msg);
     await recoverOne(failCmds, cmd, "全部打开完成");
     i++;
     let percent = Math.floor((i / userCmds.length) * 100);
-    let msg = `${computer}_恢复进度${index}:  ${i}/${userCmds.length}  ${percent}%`;
+    msg = `${computer}_恢复进度${index}:  ${i}/${userCmds.length}  ${percent}%`;
     sendAppMsg("恢复", msg);
     console.log(msg);
   }
