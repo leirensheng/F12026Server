@@ -40,7 +40,7 @@ let init = (successNicknames, allConfig, runningUsers) => {
               !needToOpenUsers.includes(user) &&
               orders.length === currentTargetAudienceLength &&
               (!only || only.length === 0) &&
-              (!remark || !remark.match(/密码|便宜/))
+              (!remark || !remark.match(/密码|便宜|退/))
             );
           });
           targets.sort(

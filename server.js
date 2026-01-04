@@ -16,6 +16,7 @@ const env = require("./env.json");
 let startNext = require("./startNext");
 const mainHostWithoutPort = require(`../${env.fileName}/mainHost`);
 let calcActivity = require("./calcActivity");
+let syncConfigToApp = require("../F1/app/syncConfigToApp");
 
 // let checkZones = require("../" + env.fileName + "/checkZones");
 const child_process = require("child_process");
@@ -496,6 +497,11 @@ router.post("/closeAndScreenshot", async (ctx, next) => {
     await screenshot(nickname);
     ctx.status = 200;
   }
+});
+
+router.post("/syncConfigToApp", async (ctx, next) => {
+  let { user, index, numbers } = ctx.request.body;
+  await syncConfigToApp({ user, index, numbers });
 });
 
 router.post("/addAudience", async (ctx, next) => {
